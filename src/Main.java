@@ -38,45 +38,14 @@ public class Main {
         ////////// write your code on this ////////////
         
         Statement st = connection.createStatement();
-        // drop table
-        ArrayList<String> dropTables = getDropTables();
-        try {
-        	for(int i=0; i<dropTables.size(); i++) {
-            	st.executeUpdate(dropTables.get(i));
-            }
-            System.out.println("drop table complete");
-        } catch (SQLException e) {
-        	System.out.println("dtop table error : " + e);
-        }
+        //drop table
+        dropTable(st);
         
         //1. create table
-        ArrayList<String> createTables = getCreateTables();
-        try {
-        	for(int i=0; i<createTables.size(); i++) {
-            	st.executeUpdate(createTables.get(i));
-            }
-            System.out.println("create table complete");
-        } catch (SQLException e) {
-        	System.out.println("create table error : " + e);
-        }
-//        //2. insert data
-//        st.executeUpdate("insert into department values ('Biology', 'Watson', '90000')");
-//        st.executeUpdate("insert into department values ('Comp. Sci.', 'Taylor', '100000')");
-//        
-//        //3. delete
-//        st.executeUpdate("delete from department where dept_name = 'Biology'");
-//        
-//        //4. selection
-//        ResultSet rs = st.executeQuery("select * from department");
-//        String dept_name;
-//        String building;
-//        Float budget;
-//        while(rs.next()) {
-//        	dept_name = rs.getString(1);
-//        	building = rs.getString(2);
-//        	budget = rs.getFloat(3);
-//        	System.out.println(dept_name+", "+building+", "+budget);
-//        }
+        createTable(st);
+        //2. insert data
+        insertFirstData(st, connection);
+        
         
         
         /////////////////////////////////////////////////////
@@ -217,157 +186,91 @@ public class Main {
 
     	return tables;
     }
+    
+    static public ArrayList<String> getInsertDatas1() {
+    	ArrayList<String> datas = new ArrayList<String>();
+    	//1. director
+    	datas.add("insert into director values (1, 'Tim Burton', '1958.8.25', null)");
+    	datas.add("insert into director values (2, 'David Fincher', '1962.8.28', null)");
+    	datas.add("insert into director values (3, 'Christopher Nolan', '1970.7.30', null)");
+    	//2. actor
+    	datas.add("insert into actor values (1, 'Johnny Depp', '1963.6.9', null, 'Male')");
+    	datas.add("insert into actor values (2, 'Winona Ryder', '1971.10.29', null, 'Female')");
+    	datas.add("insert into actor values (3, 'Mia Wasikowska', '1989.10.14', null, 'Female')");
+    	datas.add("insert into actor values (4, 'Christian Bale', '1974.1.30', null, 'Male')");
+    	datas.add("insert into actor values (5, 'Heath Ledger', '1979.4.4', '2008.1.22', 'Male')");
+    	datas.add("insert into actor values (6, 'Jesse Eisenberg', '1983.10.5', null, 'Male')");
+    	datas.add("insert into actor values (7, 'Justin Timberlake', '1981.1.31', null, 'Male')");
+    	datas.add("insert into actor values (8, 'Fionn Whitehead', '1997.7.18', null, 'Male')");
+    	datas.add("insert into actor values (9, 'Tom Hardy', '1977.9.15', null, 'Male')");
+    	//3. customer
+    	datas.add("insert into customer values (1, 'Ethan', '1997.11.14', 'Male')");
+    	datas.add("insert into customer values (2, 'John', '1978.01.23', 'Male')");
+    	datas.add("insert into customer values (3, 'Hayden', '1980.05.04', 'Female')");
+    	datas.add("insert into customer values (4, 'Jill', '1981.04.17', 'Female')");
+    	datas.add("insert into customer values (5, 'Bell', '1990.05.14', 'Female')");
+    	
+    	return datas;
+    }
+    
+    static public ArrayList<String[]> getInsertDatas2() {
+    	ArrayList<String[]> datas = new ArrayList<String[]>();
+    	datas.add(new String[]{"1", "Edward Scissorhands", "1991", "06", "29", "20th Century Fox Presents", "0.0"});
+    	datas.add(new String[]{"2", "Alice In Wonderland", "2010", "03", "04", "Korea Sony Pictures", "0.0"});
+    	datas.add(new String[]{"3", "The Social Network", "2010", "11", "18", "Korea Sony Pictures", "0.0"});
+    	datas.add(new String[]{"4", "The Dark Knight", "2008", "08", "06", "Warner Brothers Korea", "0.0"});
+    	datas.add(new String[]{"5", "Dunkirk", "2017", "07", "13", "Warner Brothers Korea", "0.0"});
+    	return datas;
+    }
+    
+    static void dropTable(Statement st) {
+    	ArrayList<String> dropTables = getDropTables();
+        try {
+        	for(int i=0; i<dropTables.size(); i++) {
+            	st.executeUpdate(dropTables.get(i));
+            }
+            System.out.println("drop table complete");
+        } catch (SQLException e) {
+        	System.out.println("dtop table error : " + e);
+        }
+    }
+    
+    static void createTable(Statement st) {
+    	ArrayList<String> createTables = getCreateTables();
+        try {
+        	for(int i=0; i<createTables.size(); i++) {
+            	st.executeUpdate(createTables.get(i));
+            }
+            System.out.println("create table complete");
+        } catch (SQLException e) {
+        	System.out.println("create table error : " + e);
+        }
+    }
+    
+    static void insertFirstData(Statement st, Connection connection) {
+    	ArrayList<String> insertDatas = getInsertDatas1();
+        try {
+        	for(int i=0; i<insertDatas.size(); i++) {
+            	st.executeUpdate(insertDatas.get(i));
+            }
+            System.out.println("insert1 datas complete");
+        } catch (SQLException e) {
+        	System.out.println("insert datas error : " + e);
+        }
+        
+        ArrayList<String[]> insertDatas2 = getInsertDatas2();
+        try {
+        	PreparedStatement pStmt = connection.prepareStatement("insert into movie values(?,?,?,?,?,?,?)");
+        	for(int i=0; i<insertDatas2.size(); i++) {
+        		pStmt.setInt(1, Integer.parseInt(insertDatas2.get(i)[0]));
+        		for(int j=2; j<7; j++) {
+        			pStmt.setString(j, insertDatas2.get(i)[j-1]);
+        		}
+        		pStmt.setFloat(7, Float.parseFloat(insertDatas2.get(i)[6]));
+        		pStmt.executeUpdate();
+        	}
+        } catch (SQLException e) {
+        	System.out.println("insert2 datas error : " + e);
+        }
+    }
 }
-
-
-//쿼리문 저장
-//create table director
-//(directorID		int not null,
-//directorName	varchar(20) not null,
-//dateOfBirth		varchar(10) not null,
-//dateOfDeath		varchar(10),
-//primary key(directorID));
-//
-//insert into director values (1, 'Tim Burton', '1958.8.25', null);
-//insert into director values (2, 'David Fincher', '1962.8.28', null);
-//insert into director values (3, 'Christopher Nolan', '1970.7.30', null);
-//
-//
-//create table actor
-//(actorID		int not null,
-//actorName		varchar(20) not null,
-//dateOfBirth		varchar(10) not null,
-//dateOfDeath		varchar(10),
-//gender			varchar(6) not null,
-//primary key(actorID));
-//
-//insert into actor values (1, 'Johnny Depp', '1963.6.9', null, 'Male');
-//insert into actor values (2, 'Winona Ryder', '1971.10.29', null, 'Female');
-//insert into actor values (3, 'Mia Wasikowska', '1989.10.14', null, 'Female');
-//insert into actor values (4, 'Christian Bale', '1974.1.30', null, 'Male');
-//insert into actor values (5, 'Heath Ledger', '1979.4.4', '2008.1.22', 'Male');
-//insert into actor values (6, 'Jesse Eisenberg', '1983.10.5', null, 'Male');
-//insert into actor values (7, 'Justin Timberlake', '1981.1.31', null, 'Male');
-//insert into actor values (8, 'Fionn Whitehead', '1997.7.18', null, 'Male');
-//insert into actor values (9, 'Tom Hardy', '1977.9.15', null, 'Male');
-//
-//
-//create table customer
-//(customerID		int not null,
-//customerName	varchar(20) not null,
-//dateOfBirth		varchar(20) not null,
-//gender			varchar(10) not null,
-//primary key(customerID));
-//
-//insert into customer values (1, 'Ethan', '1997.11.14', 'Male');
-//insert into customer values (2, 'John', '1978.01.23', 'Male');
-//insert into customer values (3, 'Hayden', '1980.05.04', 'Female');
-//insert into customer values (4, 'Jill', '1981.04.17', 'Female');
-//insert into customer values (5, 'Bell', '1990.05.14', 'Female');
-//
-//
-//
-//
-//
-//
-//
-//create table movie
-//(movieID		int not null,
-//movieName		varchar(30) not null,
-//releaseYear		varchar(4) not null,
-//releaseMonth	varchar(2) not null,
-//releaseDate		varchar(2) not null,
-//publisherName	varchar(30) not null,
-//avgRate			numeric(2,1),
-//primary key(movieID));
-//
-//
-//create table award
-//(awardID		int not null,
-//awardName		varchar(30) not null,
-//primary key(awardID));
-//
-//
-//create table genre
-//(genreName		varchar(20) not null,
-//primary key(genreName));
-//
-//
-//create table movieGenre
-//(movieID		int,
-//genreName		varchar(20),
-//primary key(movieID, genreName),
-//foreign key(movieID) references movie (movieID) on delete set null,
-//foreign key(genreName) references genre (genreName) on delete set null);
-//
-//
-//create table movieObtain
-//(movieID		int,
-//awardID			int,
-//year			varchar(4),
-//primary key(movieID, awardID),
-//foreign key(movieID) references movie (movieID) on delete set null,
-//foreign key(awardID) references award (awardID) on delete set null);
-//
-//
-//create table actorObtain
-//(actorID		int,
-//awardID			int,
-//year			varchar(4),
-//primary key(actorID, awardID),
-//foreign key(actorID) references actor (actorID) on delete set null,
-//foreign key(awardID) references award (awardID) on delete set null);
-//
-//
-//create table directorObtain
-//(directorID		int,
-//awardID			int,
-//year			varchar(4),
-//primary key(directorID, awardID),
-//foreign key(directorID) references director (directorID) on delete set null,
-//foreign key(awardID) references award (awardID) on delete set null);
-//
-//
-//create table cast
-//(movieID		int,
-//actorID			int,
-//role			varchar(20),
-//primary key(movieID, actorID),
-//foreign key(movieID) references movie (movieID) on delete set null,
-//foreign key(actorID) references actor (actorID) on delete set null);
-//
-//
-//create table make
-//(movieID		int,
-//directorID		int,
-//primary key(movieID, directorID),
-//foreign key(movieID) references movie (movieID) on delete set null,
-//foreign key(directorID) references director (directorID) on delete set null);
-//
-//
-//create table customerRate
-//(customerID		int,
-//movieID			int,
-//rate			int,
-//primary key(customerID, movieID),
-//foreign key(customerID) references customer (customerID) on delete set null,
-//foreign key(movieID) references movie (movieID) on delete set null);
-//
-//
-//
-//
-//
-//
-//insert into award values((select count(*) from award)+1, 'Best suportting actor');
-//select * from award;
-//
-//insert into actorObtain values(
-//(select actorID
-//from actor
-//where actorName = 'Winona Ryder'),
-//(select awardID
-//from award
-//where awardName = 'Best suportting actor'),
-//'1994');
-//
-//select * from actorObtain;

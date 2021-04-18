@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -37,37 +38,184 @@ public class Main {
         ////////// write your code on this ////////////
         
         Statement st = connection.createStatement();
-        //1. create table
-        st.executeUpdate("create table department\n"
-        		+ "	(dept_name		varchar(20), \n"
-        		+ "	 building		varchar(15), \n"
-        		+ "	 budget		        numeric(12,2) check (budget > 0),\n"
-        		+ "	 primary key (dept_name)\n"
-        		+ "	)");
-        
-        //2. insert data
-        st.executeUpdate("insert into department values ('Biology', 'Watson', '90000')");
-        st.executeUpdate("insert into department values ('Comp. Sci.', 'Taylor', '100000')");
-        
-        //3. delete
-        st.executeUpdate("delete from department where dept_name = 'Biology'");
-        
-        //4. selection
-        ResultSet rs = st.executeQuery("select * from department");
-        String dept_name;
-        String building;
-        Float budget;
-        while(rs.next()) {
-        	dept_name = rs.getString(1);
-        	building = rs.getString(2);
-        	budget = rs.getFloat(3);
-        	System.out.println(dept_name+", "+building+", "+budget);
+        // drop table
+        ArrayList<String> dropTables = getDropTables();
+        try {
+        	for(int i=0; i<dropTables.size(); i++) {
+            	st.executeUpdate(dropTables.get(i));
+            }
+            System.out.println("drop table complete");
+        } catch (SQLException e) {
+        	System.out.println("dtop table error : " + e);
         }
+        
+        //1. create table
+        ArrayList<String> createTables = getCreateTables();
+        try {
+        	for(int i=0; i<createTables.size(); i++) {
+            	st.executeUpdate(createTables.get(i));
+            }
+            System.out.println("create table complete");
+        } catch (SQLException e) {
+        	System.out.println("create table error : " + e);
+        }
+//        //2. insert data
+//        st.executeUpdate("insert into department values ('Biology', 'Watson', '90000')");
+//        st.executeUpdate("insert into department values ('Comp. Sci.', 'Taylor', '100000')");
+//        
+//        //3. delete
+//        st.executeUpdate("delete from department where dept_name = 'Biology'");
+//        
+//        //4. selection
+//        ResultSet rs = st.executeQuery("select * from department");
+//        String dept_name;
+//        String building;
+//        Float budget;
+//        while(rs.next()) {
+//        	dept_name = rs.getString(1);
+//        	building = rs.getString(2);
+//        	budget = rs.getFloat(3);
+//        	System.out.println(dept_name+", "+building+", "+budget);
+//        }
         
         
         /////////////////////////////////////////////////////
 
         connection.close();
+    }
+    
+    static public ArrayList<String> getCreateTables() {
+    	ArrayList<String> tables = new ArrayList<String>();
+    	//1. director
+    	tables.add("create table director\n"
+    			+ "	(directorID		int not null,\n"
+    			+ "	directorName	varchar(20) not null,\n"
+    			+ "	dateOfBirth		varchar(10) not null,\n"
+    			+ "	dateOfDeath		varchar(10),\n"
+    			+ "	primary key(directorID))");
+    	//2. actor
+    	tables.add("create table actor\n"
+    			+ "	(actorID		int not null,\n"
+    			+ "	actorName		varchar(20) not null,\n"
+    			+ "	dateOfBirth		varchar(10) not null,\n"
+    			+ "	dateOfDeath		varchar(10),\n"
+    			+ "	gender			varchar(6) not null,\n"
+    			+ "	primary key(actorID))");
+    	//3. customer
+    	tables.add("create table customer\n"
+    			+ "	(customerID		int not null,\n"
+    			+ "	customerName	varchar(20) not null,\n"
+    			+ "	dateOfBirth		varchar(20) not null,\n"
+    			+ "	gender			varchar(10) not null,\n"
+    			+ "	primary key(customerID))");
+    	//4. movie
+    	tables.add("create table movie\n"
+    			+ "	(movieID		int not null,\n"
+    			+ "	movieName		varchar(30) not null,\n"
+    			+ "	releaseYear		varchar(4) not null,\n"
+    			+ "	releaseMonth	varchar(2) not null,\n"
+    			+ "	releaseDate		varchar(2) not null,\n"
+    			+ "	publisherName	varchar(30) not null,\n"
+    			+ "	avgRate			numeric(2,1),\n"
+    			+ "	primary key(movieID))");
+    	//5. award
+    	tables.add("create table award\n"
+    			+ "	(awardID		int not null,\n"
+    			+ "	awardName		varchar(30) not null,\n"
+    			+ "	primary key(awardID))");
+    	//6. genre
+    	tables.add("create table genre\n"
+    			+ "	(genreName		varchar(20) not null,\n"
+    			+ "	primary key(genreName))");
+    	
+    	//7. movieGenre
+    	tables.add("create table movieGenre\n"
+    			+ "	(movieID		int,\n"
+    			+ "	genreName		varchar(20),\n"
+    			+ "	primary key(movieID, genreName),\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
+    			+ "	foreign key(genreName) references genre (genreName) on delete set null)");
+    	//8. movieObtain
+    	tables.add("create table movieObtain\n"
+    			+ "	(movieID		int,\n"
+    			+ "	awardID			int,\n"
+    			+ "	year			varchar(4),\n"
+    			+ "	primary key(movieID, awardID),\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    	//9. actorObtain
+    	tables.add("create table actorObtain\n"
+    			+ "	(actorID		int,\n"
+    			+ "	awardID			int,\n"
+    			+ "	year			varchar(4),\n"
+    			+ "	primary key(actorID, awardID),\n"
+    			+ "	foreign key(actorID) references actor (actorID) on delete set null,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    	//10. directorObtain
+    	tables.add("create table directorObtain\n"
+    			+ "	(directorID		int,\n"
+    			+ "	awardID			int,\n"
+    			+ "	year			varchar(4),\n"
+    			+ "	primary key(directorID, awardID),\n"
+    			+ "	foreign key(directorID) references director (directorID) on delete set null,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    	//11. casting
+    	tables.add("create table casting\n"
+    			+ "	(movieID		int,\n"
+    			+ "	actorID			int,\n"
+    			+ "	role			varchar(20),\n"
+    			+ "	primary key(movieID, actorID),\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
+    			+ "	foreign key(actorID) references actor (actorID) on delete set null)");
+    	//12. make
+    	tables.add("create table make\n"
+    			+ "	(movieID		int,\n"
+    			+ "	directorID		int,\n"
+    			+ "	primary key(movieID, directorID),\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
+    			+ "	foreign key(directorID) references director (directorID) on delete set null)");
+    	//13. customerRate
+    	tables.add("create table customerRate\n"
+    			+ "	(customerID		int,\n"
+    			+ "	movieID			int,\n"
+    			+ "	rate			int,\n"
+    			+ "	primary key(customerID, movieID),\n"
+    			+ "	foreign key(customerID) references customer (customerID) on delete set null,\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete set null)");
+    	
+    	return tables;
+    }
+    
+    static public ArrayList<String> getDropTables() {
+    	ArrayList<String> tables = new ArrayList<String>();
+    	//13. customerRate
+    	tables.add("drop table customerRate");
+    	//12. make
+    	tables.add("drop table make");
+    	//11. casting
+    	tables.add("drop table casting");
+    	//10. directorObtain
+    	tables.add("drop table directorObtain");
+    	//9. actorObtain
+    	tables.add("drop table actorObtain");
+    	//8. movieObtain
+    	tables.add("drop table movieObtain");
+    	//7. movieGenre
+    	tables.add("drop table movieGenre");
+    	//6. genre
+    	tables.add("drop table genre");
+    	//5. award
+    	tables.add("drop table award");
+    	//4. movie
+    	tables.add("drop table movie");
+    	//3. customer
+    	tables.add("drop table customer");
+    	//2. actor
+    	tables.add("drop table actor");
+    	//1. director
+    	tables.add("drop table director");
+
+    	return tables;
     }
 }
 

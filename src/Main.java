@@ -237,13 +237,19 @@ public class Main {
     	datas.add("insert into genre values ('Mystery')");
     	datas.add("insert into genre values ('Thriller')");
     	datas.add("insert into genre values ('War')");
+    	//6. make
+    	datas.add("insert into make values (1, 1)");
+    	datas.add("insert into make values (2, 1)");
+    	datas.add("insert into make values (3, 2)");
+    	datas.add("insert into make values (4, 3)");
+    	datas.add("insert into make values (5, 3)");
     	
     	return datas;
     }
     
     static public ArrayList<String[]> getInsertDatas4() {
     	ArrayList<String[]> datas = new ArrayList<String[]>();
-    	//6. movieGenre
+    	//7. movieGenre
     	datas.add(new String[]{"Fantasy", "Romance"});
     	datas.add(new String[]{"Fantasy", "Adventure", "Family"});
     	datas.add(new String[]{"Drama"});
@@ -252,6 +258,31 @@ public class Main {
     	
     	return datas;
     }
+    
+    static public ArrayList<String> getInsertDatas5() {
+    	ArrayList<String> datas = new ArrayList<String>();
+    	//8. casting
+    	ArrayList<String[]> actor_role = new ArrayList<String[]>();
+    	actor_role.add(new String[]{"Edward Scissorhands", "Johnny Depp", "Main actor"});
+    	actor_role.add(new String[]{"Edward Scissorhands", "Winona Ryder", "Main actor"});
+    	actor_role.add(new String[]{"Alice In Wonderland", "Johnny Depp", "Main actor"});
+    	actor_role.add(new String[]{"Alice In Wonderland", "Mia Wasikowska", "Main actor"});
+    	actor_role.add(new String[]{"The Social Network", "Jesse Eisenberg", "Main actor"});
+    	actor_role.add(new String[]{"The Social Network", "Justin Timberlake", "Supporting Actor"});
+    	actor_role.add(new String[]{"The Dark Knight", "Christian Bale", "Main actor"});
+    	actor_role.add(new String[]{"The Dark Knight", "Heath Ledger", "Main actor"});
+    	actor_role.add(new String[]{"Dunkirk", "Fionn Whitehead", "Main actor"});
+    	actor_role.add(new String[]{"Dunkirk", "Tom Hardy", "Supporting Actor"});
+    	
+    	for(int i=0; i<actor_role.size(); i++) {
+    		String castingQuery = "insert into casting values((select movieID from movie where movieName = '" + actor_role.get(i)[0] + "'),\n"
+        			+ "			(select actorID from actor where actorName = '" + actor_role.get(i)[1] + "'), '" + actor_role.get(i)[2] + "')";
+    		datas.add(castingQuery);
+    	}
+    	
+    	return datas;
+    }
+    
     
     static void dropTable(Statement st) {
     	ArrayList<String> dropTables = getDropTables();
@@ -304,7 +335,7 @@ public class Main {
         } catch (SQLException e) {
         	System.out.println("insert2 datas error : " + e);
         }
-        //genre
+        //genre, make
     	ArrayList<String> insertDatas3 = getInsertDatas3();
         try {
         	for(int i=0; i<insertDatas3.size(); i++) {
@@ -328,6 +359,16 @@ public class Main {
         	System.out.println("insert4 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert4 datas error : " + e);
+        }
+        //casting
+        ArrayList<String> insertDatas5 = getInsertDatas5();
+        try {
+        	for(int i=0; i<insertDatas5.size(); i++) {
+            	st.executeUpdate(insertDatas5.get(i));
+            }
+            System.out.println("insert5 datas complete");
+        } catch (SQLException e) {
+        	System.out.println("insert datas error : " + e);
         }
     }
 }

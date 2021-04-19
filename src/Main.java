@@ -215,11 +215,41 @@ public class Main {
     
     static public ArrayList<String[]> getInsertDatas2() {
     	ArrayList<String[]> datas = new ArrayList<String[]>();
+    	//4. movie
     	datas.add(new String[]{"1", "Edward Scissorhands", "1991", "06", "29", "20th Century Fox Presents", "0.0"});
     	datas.add(new String[]{"2", "Alice In Wonderland", "2010", "03", "04", "Korea Sony Pictures", "0.0"});
     	datas.add(new String[]{"3", "The Social Network", "2010", "11", "18", "Korea Sony Pictures", "0.0"});
     	datas.add(new String[]{"4", "The Dark Knight", "2008", "08", "06", "Warner Brothers Korea", "0.0"});
     	datas.add(new String[]{"5", "Dunkirk", "2017", "07", "13", "Warner Brothers Korea", "0.0"});
+    	
+    	return datas;
+    }
+    
+    static public ArrayList<String> getInsertDatas3() {
+    	ArrayList<String> datas = new ArrayList<String>();
+    	//5. genre
+    	datas.add("insert into genre values ('Fantasy')");
+    	datas.add("insert into genre values ('Romance')");
+    	datas.add("insert into genre values ('Adventure')");
+    	datas.add("insert into genre values ('Family')");
+    	datas.add("insert into genre values ('Drama')");
+    	datas.add("insert into genre values ('Action')");
+    	datas.add("insert into genre values ('Mystery')");
+    	datas.add("insert into genre values ('Thriller')");
+    	datas.add("insert into genre values ('War')");
+    	
+    	return datas;
+    }
+    
+    static public ArrayList<String[]> getInsertDatas4() {
+    	ArrayList<String[]> datas = new ArrayList<String[]>();
+    	//6. movieGenre
+    	datas.add(new String[]{"Fantasy", "Romance"});
+    	datas.add(new String[]{"Fantasy", "Adventure", "Family"});
+    	datas.add(new String[]{"Drama"});
+    	datas.add(new String[]{"Action", "Drama", "Mystery", "Thriller"});
+    	datas.add(new String[]{"Action", "Drama", "Thriller", "War"});
+    	
     	return datas;
     }
     
@@ -248,6 +278,7 @@ public class Main {
     }
     
     static void insertFirstData(Statement st, Connection connection) {
+    	//director, actor, customer
     	ArrayList<String> insertDatas = getInsertDatas1();
         try {
         	for(int i=0; i<insertDatas.size(); i++) {
@@ -257,7 +288,7 @@ public class Main {
         } catch (SQLException e) {
         	System.out.println("insert datas error : " + e);
         }
-        
+        //movie
         ArrayList<String[]> insertDatas2 = getInsertDatas2();
         try {
         	PreparedStatement pStmt = connection.prepareStatement("insert into movie values(?,?,?,?,?,?,?)");
@@ -269,8 +300,52 @@ public class Main {
         		pStmt.setFloat(7, Float.parseFloat(insertDatas2.get(i)[6]));
         		pStmt.executeUpdate();
         	}
+        	System.out.println("insert2 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert2 datas error : " + e);
         }
+        //genre
+    	ArrayList<String> insertDatas3 = getInsertDatas3();
+        try {
+        	for(int i=0; i<insertDatas3.size(); i++) {
+            	st.executeUpdate(insertDatas3.get(i));
+            }
+            System.out.println("insert3 datas complete");
+        } catch (SQLException e) {
+        	System.out.println("insert3 datas error : " + e);
+        }
+        //movieGenre
+        ArrayList<String[]> insertDatas4 = getInsertDatas4();
+        try {
+        	PreparedStatement pStmt = connection.prepareStatement("insert into movieGenre values(?,?)");
+        	for(int i=0; i<insertDatas4.size(); i++) {
+        		for(int j=0; j<insertDatas4.get(i).length; j++) {
+        			pStmt.setInt(1, i+1);
+        			pStmt.setString(2, insertDatas4.get(i)[j]);
+        			pStmt.executeUpdate();
+        		}
+        	}
+        	System.out.println("insert4 datas complete");
+        } catch (SQLException e) {
+        	System.out.println("insert4 datas error : " + e);
+        }
     }
 }
+
+//select * from actor;
+//select * from director;
+//select * from customer;
+//
+//insert into movie values (1, 'Edward Scissorhands', '1991', '06', '29', '20th Century Fox Presents', 0.0);
+//insert into genre values ('Fantasy, Romance');
+//insert into make values ((select movieID from movie where movieName = 'Edward Scissorhands'),
+//						(select directorID from director where directorName = 'Tim Burton'));
+//insert into casting values ((select movieID from movie where movieName = 'Edward Scissorhands'),
+//						   (select actorID from actor where actorName = 'Johnny Depp'),
+//						   'Main actor');
+//insert into casting values ((select movieID from movie where movieName = 'Edward Scissorhands'),
+//						   (select actorID from actor where actorName = 'Winona Ryder'),
+//						   'Main actor');
+//select * from movie;
+//select * from make;
+//select * from casting;

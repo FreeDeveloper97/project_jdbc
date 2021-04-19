@@ -11,7 +11,7 @@ public class Main {
             e.printStackTrace();
             return;
         }
-        System.out.println("PostgreSQL JDBC Driver Registered!");
+//        System.out.println("PostgreSQL JDBC Driver Registered!");
         /// if you have a error in this part, check jdbc driver(.jar file)
 
         Connection connection = null;
@@ -27,8 +27,9 @@ public class Main {
         /// if you have a error in this part, check DB information (db_name, user name, password)
 
         if (connection != null) {
-            System.out.println(connection);
-            System.out.println("You made it, take control your database now!");
+//            System.out.println(connection);
+//            System.out.println("You made it, take control your database now!");
+            System.out.println("연결 성공");
         } else {
             System.out.println("Failed to make connection!");
         }
@@ -41,10 +42,19 @@ public class Main {
         //drop table
         dropTable(st);
         
-        //1. create table
+        //1-1 create table
         createTable(st);
-        //2. insert data
+        //1-2 insert data
         insertFirstData(st, connection);
+        
+        //2-1 insert award, actorObtain
+        awardActor(st, "Winona Ryder", "Best supporting actor", "1994");
+        //2-2 insert award, actorObtain
+        awardActor(st, "Tom Hardy", "Best supporting actor", "2018");
+        //2-3 insert award, actorObtain
+        awardActor(st, "Heath Ledger", "Best villain actor", "2009");
+        //2-4 insert award, actorObtain
+        awardActor(st, "Johnny Depp", "Best main actor", "2011");
         
         
         
@@ -302,9 +312,9 @@ public class Main {
         	for(int i=0; i<createTables.size(); i++) {
             	st.executeUpdate(createTables.get(i));
             }
-            System.out.println("create table complete");
+            System.out.println("Table created!");
         } catch (SQLException e) {
-        	System.out.println("create table error : " + e);
+        	System.out.println("Table create error : " + e);
         }
     }
     
@@ -315,7 +325,7 @@ public class Main {
         	for(int i=0; i<insertDatas.size(); i++) {
             	st.executeUpdate(insertDatas.get(i));
             }
-            System.out.println("insert1 datas complete");
+//            System.out.println("insert1 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert datas error : " + e);
         }
@@ -331,7 +341,7 @@ public class Main {
         		pStmt.setFloat(7, Float.parseFloat(insertDatas2.get(i)[6]));
         		pStmt.executeUpdate();
         	}
-        	System.out.println("insert2 datas complete");
+//        	System.out.println("insert2 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert2 datas error : " + e);
         }
@@ -341,7 +351,7 @@ public class Main {
         	for(int i=0; i<insertDatas3.size(); i++) {
             	st.executeUpdate(insertDatas3.get(i));
             }
-            System.out.println("insert3 datas complete");
+//            System.out.println("insert3 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert3 datas error : " + e);
         }
@@ -356,7 +366,7 @@ public class Main {
         			pStmt.executeUpdate();
         		}
         	}
-        	System.out.println("insert4 datas complete");
+//        	System.out.println("insert4 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert4 datas error : " + e);
         }
@@ -366,27 +376,56 @@ public class Main {
         	for(int i=0; i<insertDatas5.size(); i++) {
             	st.executeUpdate(insertDatas5.get(i));
             }
-            System.out.println("insert5 datas complete");
+//            System.out.println("insert5 datas complete");
         } catch (SQLException e) {
         	System.out.println("insert datas error : " + e);
+        }
+        System.out.println("Initial data inserted!\n");
+    }
+    
+    static void awardActor(Statement st, String actorName, String awardName, String year) {
+    	System.out.println("Statement : "+actorName+" won the \""+awardName+"\" award in "+year);
+    	int awardID = 0;
+    	try {
+    		//1. award 입력
+    		ResultSet rs = st.executeQuery("select count(awardID) from award where awardName = '" + awardName + "'");
+    		int count = 0;
+    		while(rs.next()) {
+    			count = rs.getInt(1);
+    		}
+    		
+			if(count == 0) {
+				rs = st.executeQuery("select distinct count(*) from award");
+				while(rs.next()) {
+					awardID = rs.getInt(1)+1;
+				}
+				
+	    		String query = "insert into award values (" + awardID + ", '" + awardName + "')";
+	    		
+	    		st.executeUpdate(query);
+//	            System.out.println("insert award complete");
+			} else {
+				rs = st.executeQuery("select awardID from award where awardName = '" + awardName + "'");
+				while(rs.next()) {
+					awardID = rs.getInt(1);
+				}
+			}
+        } catch (SQLException e) {
+        	System.out.println("insert award error : " + e);
+        }
+    	
+    	try {
+    		//2. actorObtain 입력
+            String actorID = "(select actorID from actor where actorName = '" + actorName + "')";
+            String query = "insert into actorObtain values (" + actorID + ", " + awardID + ", '" + year + "')";
+            
+            st.executeUpdate(query);
+//            System.out.println("insert actorObtain complete");
+    	} catch (SQLException e) {
+        	System.out.println("insert actorObtain error : " + e);
         }
     }
 }
 
-//select * from actor;
-//select * from director;
-//select * from customer;
-//
-//insert into movie values (1, 'Edward Scissorhands', '1991', '06', '29', '20th Century Fox Presents', 0.0);
-//insert into genre values ('Fantasy, Romance');
-//insert into make values ((select movieID from movie where movieName = 'Edward Scissorhands'),
-//						(select directorID from director where directorName = 'Tim Burton'));
-//insert into casting values ((select movieID from movie where movieName = 'Edward Scissorhands'),
-//						   (select actorID from actor where actorName = 'Johnny Depp'),
-//						   'Main actor');
-//insert into casting values ((select movieID from movie where movieName = 'Edward Scissorhands'),
-//						   (select actorID from actor where actorName = 'Winona Ryder'),
-//						   'Main actor');
-//select * from movie;
-//select * from make;
-//select * from casting;
+
+

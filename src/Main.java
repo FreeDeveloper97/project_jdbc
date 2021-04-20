@@ -50,11 +50,11 @@ public class Main {
         //2-1 insert award, actorObtain
         awardActor(st, "Winona Ryder", "Best supporting actor", "1994");
         //2-2 insert award, actorObtain
-//        awardActor(st, "Tom Hardy", "Best supporting actor", "2018");
-//        //2-3 insert award, actorObtain
-//        awardActor(st, "Heath Ledger", "Best villain actor", "2009");
-//        //2-4 insert award, actorObtain
-//        awardActor(st, "Johnny Depp", "Best main actor", "2011");
+        awardActor(st, "Tom Hardy", "Best supporting actor", "2018");
+        //2-3 insert award, actorObtain
+        awardActor(st, "Heath Ledger", "Best villain actor", "2009");
+        //2-4 insert award, actorObtain
+        awardActor(st, "Johnny Depp", "Best main actor", "2011");
         
         
         
@@ -386,8 +386,8 @@ public class Main {
     static void awardActor(Statement st, String actorName, String awardName, String year) {
     	System.out.println("Statement : "+actorName+" won the \""+awardName+"\" award in "+year);
     	int awardID = 0;
+    	//1. award 입력
     	try {
-    		//1. award 입력
     		//동일데이터가 있는지 여부 확인
     		ResultSet rs = st.executeQuery("select count(awardID) from award where awardName = '" + awardName + "'");
     		int count = 0;
@@ -398,8 +398,9 @@ public class Main {
 				while(rs.next()) { awardID = rs.getInt(1)+1; }
 	    		String query = "INSERT into award values (" + awardID + ", '" + awardName + "')";
 	    		//수행
-	    		st.executeUpdate(query);
 	    		System.out.println("Translated SQL: " + query);
+	    		st.executeUpdate(query);
+	    		System.out.println("updated Tables");
 			} 
 			//동일데이터가 있는경우 -> 해당 ID값 저장
 			else {
@@ -409,18 +410,23 @@ public class Main {
 			//table 출력
     		printAwardTable(st);
         } catch (SQLException e) {
-        	System.out.println("insert award error : " + e);
+        	System.out.println("INSERT award error : " + e);
         }
     	
+    	//2. actorObtain 입력
     	try {
-    		//2. actorObtain 입력
-            String actorID = "(select actorID from actor where actorName = '" + actorName + "')";
-            String query = "insert into actorObtain values (" + actorID + ", " + awardID + ", '" + year + "')";
-            
+    		int actorID = 0;
+    		ResultSet rs = st.executeQuery("select actorID from actor where actorName = '" + actorName + "'");
+    		while(rs.next()) { actorID = rs.getInt(1); }
+            String query = "INSERT into actorObtain values (" + actorID + ", " + awardID + ", '" + year + "')";
+            //수행
+            System.out.println("Translated SQL: " + query);
             st.executeUpdate(query);
-//            System.out.println("insert actorObtain complete");
+            System.out.println("updated Tables");
+          //table 출력
+            printactorObtainTable(st);
     	} catch (SQLException e) {
-        	System.out.println("insert actorObtain error : " + e);
+        	System.out.println("INSERT actorObtain error : " + e);
         }
     }
     
@@ -429,15 +435,38 @@ public class Main {
     		ResultSet rs = st.executeQuery("SELECT * from award");
     		int awardID;
     		String awardName;
+    		System.out.println("award table");
     		System.out.println("+-----------------------------------");
     		System.out.println("|awardID   |awardName");
     		while(rs.next()) {
     			awardID = rs.getInt(1);
     			awardName = rs.getString(2);
-    			System.out.printf("|"+"%-10d"+"|"+"%-23s\n", awardID, awardName);
+    			System.out.printf("|"+"%-10d"+"|"+"%s\n", awardID, awardName);
     		}
+    		System.out.println();
     	} catch (SQLException e) {
-        	System.out.println("insert actorObtain error : " + e);
+        	System.out.println("SELECT award error : " + e);
+        }
+    }
+    
+    static void printactorObtainTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from actorObtain");
+    		int actorID;
+    		int awardID;
+    		String year;
+    		System.out.println("actorObtain table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|actorID   |awardID   |year");
+    		while(rs.next()) {
+    			actorID = rs.getInt(1);
+    			awardID = rs.getInt(2);
+    			year = rs.getString(3);
+    			System.out.printf("|"+"%-10d"+"|"+"%-10d"+"|"+"%s\n", actorID, awardID, year);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT actorObtain error : " + e);
         }
     }
 }

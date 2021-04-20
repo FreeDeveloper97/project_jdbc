@@ -50,11 +50,11 @@ public class Main {
         //2-1 insert award, actorObtain
         awardActor(st, "Winona Ryder", "Best supporting actor", "1994");
         //2-2 insert award, actorObtain
-        awardActor(st, "Tom Hardy", "Best supporting actor", "2018");
-        //2-3 insert award, actorObtain
-        awardActor(st, "Heath Ledger", "Best villain actor", "2009");
-        //2-4 insert award, actorObtain
-        awardActor(st, "Johnny Depp", "Best main actor", "2011");
+//        awardActor(st, "Tom Hardy", "Best supporting actor", "2018");
+//        //2-3 insert award, actorObtain
+//        awardActor(st, "Heath Ledger", "Best villain actor", "2009");
+//        //2-4 insert award, actorObtain
+//        awardActor(st, "Johnny Depp", "Best main actor", "2011");
         
         
         
@@ -100,7 +100,7 @@ public class Main {
     	//5. award
     	tables.add("create table award\n"
     			+ "	(awardID		int not null,\n"
-    			+ "	awardName		varchar(30) not null,\n"
+    			+ "	awardName		varchar(23) not null,\n"
     			+ "	primary key(awardID))");
     	//6. genre
     	tables.add("create table genre\n"
@@ -388,28 +388,26 @@ public class Main {
     	int awardID = 0;
     	try {
     		//1. award 입력
+    		//동일데이터가 있는지 여부 확인
     		ResultSet rs = st.executeQuery("select count(awardID) from award where awardName = '" + awardName + "'");
     		int count = 0;
-    		while(rs.next()) {
-    			count = rs.getInt(1);
-    		}
-    		
+    		while(rs.next()) { count = rs.getInt(1); }
+    		//동일데이터가 없는 경우 -> ID값 생성, 추가
 			if(count == 0) {
 				rs = st.executeQuery("select distinct count(*) from award");
-				while(rs.next()) {
-					awardID = rs.getInt(1)+1;
-				}
-				
-	    		String query = "insert into award values (" + awardID + ", '" + awardName + "')";
-	    		
+				while(rs.next()) { awardID = rs.getInt(1)+1; }
+	    		String query = "INSERT into award values (" + awardID + ", '" + awardName + "')";
+	    		//수행
 	    		st.executeUpdate(query);
-//	            System.out.println("insert award complete");
-			} else {
+	    		System.out.println("Translated SQL: " + query);
+			} 
+			//동일데이터가 있는경우 -> 해당 ID값 저장
+			else {
 				rs = st.executeQuery("select awardID from award where awardName = '" + awardName + "'");
-				while(rs.next()) {
-					awardID = rs.getInt(1);
-				}
+				while(rs.next()) { awardID = rs.getInt(1); }
 			}
+			//table 출력
+    		printAwardTable(st);
         } catch (SQLException e) {
         	System.out.println("insert award error : " + e);
         }
@@ -421,6 +419,23 @@ public class Main {
             
             st.executeUpdate(query);
 //            System.out.println("insert actorObtain complete");
+    	} catch (SQLException e) {
+        	System.out.println("insert actorObtain error : " + e);
+        }
+    }
+    
+    static void printAwardTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from award");
+    		int awardID;
+    		String awardName;
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|awardID   |awardName");
+    		while(rs.next()) {
+    			awardID = rs.getInt(1);
+    			awardName = rs.getString(2);
+    			System.out.printf("|"+"%-10d"+"|"+"%-23s\n", awardID, awardName);
+    		}
     	} catch (SQLException e) {
         	System.out.println("insert actorObtain error : " + e);
         }

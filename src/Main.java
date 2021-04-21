@@ -63,6 +63,9 @@ public class Main {
         awardMovie(st, "The Dark Knight", "Best picture", "2009");
         //2-8 insert award, directorObtain
         awardDirector(st, "Christopher Nolan", "Best director", "2018");
+        //3-1 insert customer, update movie
+        customerRate(st, "Ethan", 5, "Dunkirk");
+        
         
         /////////////////////////////////////////////////////
 
@@ -413,6 +416,14 @@ public class Main {
     	addDirectorObtain(st, awardID, directorName, year);
     }
     
+    static void customerRate(Statement st, String customerName, int rate, String movieName) {
+    	System.out.println("Statement : " + customerName + " rates " + rate + " to \"" + movieName + "\"");
+    	//1. consumerRate 입력
+    	int movieID = addCustomerRate(st, customerName, movieName, rate);
+    	//2. movie update 하기
+    	updateMovieRate(st, movieID, rate);
+    }
+    
     static int addAward(Statement st, String awardName) {
     	int awardID = 0;
     	try {
@@ -494,6 +505,35 @@ public class Main {
         }
     }
     
+    static int addCustomerRate(Statement st, String customerName, String movieName, int rate) {
+    	int movieID = 0;
+    	try {
+    		//1. consumer : consumerID 가져오기
+    		int customerID = 0;
+    		ResultSet rs = st.executeQuery("SELECT customerID from customer where customerName = '" + customerName + "'");
+    		while(rs.next()) { customerID = rs.getInt(1); }
+    		
+    		//2. movie : movieID 가져오기
+    		rs = st.executeQuery("SELECT movieID from movie where movieName = '" + movieName + "'");
+    		while(rs.next()) { movieID = rs.getInt(1); }
+    		//3. consumerRate 입력하기
+    		String query = "INSERT into customerRate values (" + customerID + ", " + movieID + ", " + rate + ")";
+    		//수행
+    		System.out.println("Translated SQL: " + query);
+    		st.executeUpdate(query);
+    		System.out.println("updated Tables");
+    		//table 출력
+    		printCustomerRateTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("INSERT customerRate error : " + e);
+        }
+    	return movieID;
+    }
+    
+    static void updateMovieRate(Statement st, int movieID, int rate) {
+    	System.out.println("update movie / movieID = " + movieID + ", rate = " + rate);
+    }
+    
     static void printAwardTable(Statement st) {
     	try {
     		ResultSet rs = st.executeQuery("SELECT * from award");
@@ -573,6 +613,27 @@ public class Main {
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT directorObtain error : " + e);
+        }
+    }
+    
+    static void printCustomerRateTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from customerRate");
+    		int customerID;
+    		int movieID;
+    		int rate;
+    		System.out.println("customerRate table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|customerID  |movieID  |rate");
+    		while(rs.next()) {
+    			customerID = rs.getInt(1);
+    			movieID = rs.getInt(2);
+    			rate = rs.getInt(3);
+    			System.out.printf("|"+"%-12d"+"|"+"%-9d"+"|"+"%s\n", customerID, movieID, rate);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT customerRate error : " + e);
         }
     }
 }

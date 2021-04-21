@@ -75,6 +75,9 @@ public class Main {
         //3-5 insert customer, update movie
         customerRateFromDirectorObtain(st, "John", 5, "Best director");
         
+        //4 select movie
+        selectMovieWithActorDead(st);
+        
         
         /////////////////////////////////////////////////////
 
@@ -683,6 +686,30 @@ public class Main {
         	System.out.println("SELECT directorObtain error : " + e);
         }
     	return movieIds;
+    }
+    
+    static void selectMovieWithActorDead(Statement st) {
+    	System.out.println("Statement : Select the names of the movies whose actor are dead");
+    	String query = "WITH actorIds(actorID) as\n"
+    			+ "		(SELECT actorID from actor where dateOfDeath is not null),\n"
+    			+ "		movieIds(movieID) as\n"
+    			+ "		(SELECT movieID from casting join actorIds using(actorID))\n"
+    			+ "		SELECT * from movie join movieIds using(movieID)";
+    	System.out.println("Translated SQL: " + query);
+    	try {
+    		ResultSet rs = st.executeQuery(query);
+    		String movieName;
+    		System.out.println("movie table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieName");
+    		while(rs.next()) {
+    			movieName = rs.getString(2);
+    			System.out.println("|"+movieName);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movie error : " + e);
+        }
     }
     
     static void printAwardTable(Statement st) {

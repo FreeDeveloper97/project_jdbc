@@ -65,6 +65,8 @@ public class Main {
         awardDirector(st, "Christopher Nolan", "Best director", "2018");
         //3-1 insert customer, update movie
         customerRate(st, "Ethan", 5, "Dunkirk");
+        //3-1 insert customer, update movie
+        customerRateWithDirector(st, "Bell", 5, "Tim Burton");
         
         
         /////////////////////////////////////////////////////
@@ -418,10 +420,25 @@ public class Main {
     
     static void customerRate(Statement st, String customerName, int rate, String movieName) {
     	System.out.println("Statement : " + customerName + " rates " + rate + " to \"" + movieName + "\"");
-    	//1. consumerRate 입력
-    	int movieID = addCustomerRate(st, customerName, movieName, rate);
-    	//2. movie update 하기
+    	//1. movieID 값 구하기
+    	int movieID = getMovieID(st, movieName);
+    	//2. customerRate 추가하기
+    	addCustomerRate(st, customerName, movieID, rate);
+    	//3. movie update 하기
     	updateMovieRate(st, movieID);
+    }
+    
+    static void customerRateWithDirector(Statement st, String customerName, int rate, String directorName) {
+    	System.out.println("Statement : " + customerName + " rates " + rate + " to the movies whose director is \"" + directorName + "\"");
+    	//1. directorId 값 구하기
+    	int directorID = getDirectorID(st, directorName);
+    	//2. make 에서 movieId 값들 구하기
+    	ArrayList<Integer> movieIds = getMovieIDFromMake(st, directorID);
+    	//3. customerRate 추가, movie update 하기
+    	for(int i=0; i<movieIds.size(); i++) {
+    		addCustomerRate(st, customerName, movieIds.get(i), rate);
+    		updateMovieRate(st, movieIds.get(i));
+    	}
     }
     
     static int addAward(Statement st, String awardName) {
@@ -505,17 +522,13 @@ public class Main {
         }
     }
     
-    static int addCustomerRate(Statement st, String customerName, String movieName, int rate) {
-    	int movieID = 0;
+    static int addCustomerRate(Statement st, String customerName, int movieID, int rate) {
     	try {
     		//1. consumer : consumerID 가져오기
     		int customerID = 0;
     		ResultSet rs = st.executeQuery("SELECT customerID from customer where customerName = '" + customerName + "'");
     		while(rs.next()) { customerID = rs.getInt(1); }
     		
-    		//2. movie : movieID 가져오기
-    		rs = st.executeQuery("SELECT movieID from movie where movieName = '" + movieName + "'");
-    		while(rs.next()) { movieID = rs.getInt(1); }
     		//3. consumerRate 입력하기
     		String query = "INSERT into customerRate values (" + customerID + ", " + movieID + ", " + rate + ")";
     		//수행
@@ -547,6 +560,39 @@ public class Main {
     	} catch (SQLException e) {
         	System.out.println("UPDATE movie error : " + e);
         }
+    }
+    
+    static int getMovieID(Statement st, String movieName) {
+    	int movieID = 0;
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT movieID from movie where movieName = '" + movieName + "'");
+    		while(rs.next()) { movieID = rs.getInt(1); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movie error : " + e);
+        }
+    	return movieID;
+    }
+    
+    static int getDirectorID(Statement st, String directorName) {
+    	int directorID = 0;
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT directorID from director where directorName = '" + directorName + "'");
+    		while(rs.next()) { directorID = rs.getInt(1); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT director error : " + e);
+        }
+    	return directorID;
+    }
+    
+    static ArrayList<Integer> getMovieIDFromMake(Statement st, int directorID) {
+    	ArrayList<Integer> movieIds = new ArrayList<Integer>();
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT movieID from make where directorID = " + directorID);
+    		while(rs.next()) { movieIds.add(rs.getInt(1)); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT make error : " + e);
+        }
+    	return movieIds;
     }
     
     static void printAwardTable(Statement st) {

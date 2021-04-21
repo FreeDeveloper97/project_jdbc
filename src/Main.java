@@ -67,9 +67,10 @@ public class Main {
         customerRate(st, "Ethan", 5, "Dunkirk");
         //3-2 insert customer, update movie
         customerRateFromMake(st, "Bell", 5, "Tim Burton");
-        //3-3 insert 
+        //3-3 insert customer, update movie
         customerRateFromCasting(st, "Jill", 4, "Main actor", "Female");
-        //casting:role = female, Main Actor -> movieID
+        //3-4 insert customer, update movie
+        customerRateFromMovieGenre(st, "Hayden", 4, "Fantasy");
         
         
         /////////////////////////////////////////////////////
@@ -109,7 +110,7 @@ public class Main {
     			+ "	releaseMonth	varchar(2) not null,\n"
     			+ "	releaseDate		varchar(2) not null,\n"
     			+ "	publisherName	varchar(25) not null,\n"
-    			+ "	avgRate			numeric(2,1),\n"
+    			+ "	avgRate			numeric(7,6),\n"
     			+ "	primary key(movieID))");
     	//5. award
     	tables.add("create table award\n"
@@ -457,6 +458,17 @@ public class Main {
     	}
     }
     
+    static void customerRateFromMovieGenre(Statement st, String customerName, int rate, String genreName) {
+    	System.out.println("Statement : " + customerName + " rates " + rate + " to the " + genreName + " movies");
+    	//1. movieGenre 에서 movieID 값들 구하기
+    	ArrayList<Integer> movieIds = getMovieIdsFromMovieGenre(st, genreName);
+    	//2. customerRate 추가, movie update 하기
+    	for(int i=0; i<movieIds.size(); i++) {
+    		addCustomerRate(st, customerName, movieIds.get(i), rate);
+    		updateMovieRate(st, movieIds.get(i));
+    	}
+    }
+    
     static int addAward(Statement st, String awardName) {
     	int awardID = 0;
     	try {
@@ -631,6 +643,17 @@ public class Main {
     		}
     	} catch (SQLException e) {
         	System.out.println("SELECT casting error : " + e);
+        }
+    	return movieIds;
+    }
+    
+    static ArrayList<Integer> getMovieIdsFromMovieGenre(Statement st, String genreName) {
+    	ArrayList<Integer> movieIds = new ArrayList<Integer>();
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT movieID from movieGenre where genreName = '" + genreName + "'");
+    		while(rs.next()) { movieIds.add(rs.getInt(1)); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movieGenre error : " + e);
         }
     	return movieIds;
     }

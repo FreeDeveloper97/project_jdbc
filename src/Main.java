@@ -39,7 +39,7 @@ public class Main {
         ////////// write your code on this ////////////
         
         Statement st = connection.createStatement();
-        //drop table
+//        //drop table
         dropTable(st);
         
         //1-1 create table
@@ -55,8 +55,14 @@ public class Main {
         awardActor(st, "Heath Ledger", "Best villain actor", "2009");
         //2-4 insert award, actorObtain
         awardActor(st, "Johnny Depp", "Best main actor", "2011");
-        
-        
+        //2-5 insert award, movieObtain
+        awardMovie(st, "Edward Scissorhands", "Best fantasy movie", "1991");
+        //2-6 insert award, movieObtain
+        awardMovie(st, "Alice In Wonderland", "Best fantasy movie", "2011");
+        //2-7 insert award, movieObtain
+        awardMovie(st, "The Dark Knight", "Best picture", "2009");
+        //2-8 insert award, directorObtain
+        awardDirector(st, "Christopher Nolan", "Best director", "2018");
         
         /////////////////////////////////////////////////////
 
@@ -385,8 +391,30 @@ public class Main {
     
     static void awardActor(Statement st, String actorName, String awardName, String year) {
     	System.out.println("Statement : "+actorName+" won the \""+awardName+"\" award in "+year);
-    	int awardID = 0;
     	//1. award 입력
+    	int awardID = addAward(st, awardName);
+    	//2. actorObtain 입력
+    	addActorObtain(st, awardID, actorName, year);
+    }
+    
+    static void awardMovie(Statement st, String movieName, String awardName, String year) {
+    	System.out.println("Statement : "+movieName+" won the \""+awardName+"\" award in "+year);
+    	//1. award 입력
+    	int awardID = addAward(st, awardName);
+    	//2. movieObtain 입력
+    	addMovieObtain(st, awardID, movieName, year);
+    }
+    
+    static void awardDirector(Statement st, String directorName, String awardName, String year) {
+    	System.out.println("Statement : "+directorName+" won the \""+awardName+"\" award in "+year);
+    	//1. award 입력
+    	int awardID = addAward(st, awardName);
+    	//2. directorObtain 입력
+    	addDirectorObtain(st, awardID, directorName, year);
+    }
+    
+    static int addAward(Statement st, String awardName) {
+    	int awardID = 0;
     	try {
     		//동일데이터가 있는지 여부 확인
     		ResultSet rs = st.executeQuery("select count(awardID) from award where awardName = '" + awardName + "'");
@@ -412,11 +440,13 @@ public class Main {
         } catch (SQLException e) {
         	System.out.println("INSERT award error : " + e);
         }
-    	
-    	//2. actorObtain 입력
+    	return awardID;
+    }
+    
+    static void addActorObtain(Statement st, int awardID, String actorName, String year) {
     	try {
     		int actorID = 0;
-    		ResultSet rs = st.executeQuery("select actorID from actor where actorName = '" + actorName + "'");
+    		ResultSet rs = st.executeQuery("SELECT actorID from actor where actorName = '" + actorName + "'");
     		while(rs.next()) { actorID = rs.getInt(1); }
             String query = "INSERT into actorObtain values (" + actorID + ", " + awardID + ", '" + year + "')";
             //수행
@@ -424,9 +454,43 @@ public class Main {
             st.executeUpdate(query);
             System.out.println("updated Tables");
           //table 출력
-            printactorObtainTable(st);
+            printActorObtainTable(st);
     	} catch (SQLException e) {
         	System.out.println("INSERT actorObtain error : " + e);
+        }
+    }
+    
+    static void addMovieObtain(Statement st, int awardID, String movieName, String year) {
+    	try {
+    		int movieID = 0;
+    		ResultSet rs = st.executeQuery("SELECT movieID from movie where movieName = '" + movieName + "'");
+    		while(rs.next()) { movieID = rs.getInt(1); }
+            String query = "INSERT into movieObtain values (" + movieID + ", " + awardID + ", '" + year + "')";
+            //수행
+            System.out.println("Translated SQL: " + query);
+            st.executeUpdate(query);
+            System.out.println("updated Tables");
+            //table 출력
+            printMovieObtainTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("INSERT movieObtain error : " + e);
+        }
+    }
+    
+    static void addDirectorObtain(Statement st, int awardID, String directorName, String year) {
+    	try {
+    		int directorID = 0;
+    		ResultSet rs = st.executeQuery("SELECT directorID from director where directorName = '" + directorName + "'");
+    		while(rs.next()) { directorID = rs.getInt(1); }
+            String query = "INSERT into directorObtain values (" + directorID + ", " + awardID + ", '" + year + "')";
+            //수행
+            System.out.println("Translated SQL: " + query);
+            st.executeUpdate(query);
+            System.out.println("updated Tables");
+            //table 출력
+            printDirectorObtainTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("INSERT directorObtain error : " + e);
         }
     }
     
@@ -449,7 +513,7 @@ public class Main {
         }
     }
     
-    static void printactorObtainTable(Statement st) {
+    static void printActorObtainTable(Statement st) {
     	try {
     		ResultSet rs = st.executeQuery("SELECT * from actorObtain");
     		int actorID;
@@ -467,6 +531,48 @@ public class Main {
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT actorObtain error : " + e);
+        }
+    }
+    
+    static void printMovieObtainTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from movieObtain");
+    		int movieID;
+    		int awardID;
+    		String year;
+    		System.out.println("movieObtain table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieID   |awardID   |year");
+    		while(rs.next()) {
+    			movieID = rs.getInt(1);
+    			awardID = rs.getInt(2);
+    			year = rs.getString(3);
+    			System.out.printf("|"+"%-10d"+"|"+"%-10d"+"|"+"%s\n", movieID, awardID, year);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movieObtain error : " + e);
+        }
+    }
+    
+    static void printDirectorObtainTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from directorObtain");
+    		int directorID;
+    		int awardID;
+    		String year;
+    		System.out.println("directorObtain table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|directorID  |awardID  |year");
+    		while(rs.next()) {
+    			directorID = rs.getInt(1);
+    			awardID = rs.getInt(2);
+    			year = rs.getString(3);
+    			System.out.printf("|"+"%-12d"+"|"+"%-9d"+"|"+"%s\n", directorID, awardID, year);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT directorObtain error : " + e);
         }
     }
 }

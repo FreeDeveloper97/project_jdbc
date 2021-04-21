@@ -77,6 +77,8 @@ public class Main {
         
         //4 select movie
         selectMovieWithActorDead(st);
+        //5 select director
+        selectDirectorWithActorCount(st);
         
         
         /////////////////////////////////////////////////////
@@ -692,9 +694,11 @@ public class Main {
     	System.out.println("Statement : Select the names of the movies whose actor are dead");
     	String query = "WITH actorIds(actorID) as\n"
     			+ "		(SELECT actorID from actor where dateOfDeath is not null),\n"
+    			+ "		\n"
     			+ "		movieIds(movieID) as\n"
     			+ "		(SELECT movieID from casting join actorIds using(actorID))\n"
-    			+ "		SELECT * from movie join movieIds using(movieID)";
+    			+ "		\n"
+    			+ "		SELECT movieName from movie join movieIds using(movieID)";
     	System.out.println("Translated SQL: " + query);
     	try {
     		ResultSet rs = st.executeQuery(query);
@@ -703,12 +707,43 @@ public class Main {
     		System.out.println("+-----------------------------------");
     		System.out.println("|movieName");
     		while(rs.next()) {
-    			movieName = rs.getString(2);
+    			movieName = rs.getString(1);
     			System.out.println("|"+movieName);
     		}
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT movie error : " + e);
+        }
+    }
+    
+    static void selectDirectorWithActorCount(Statement st) {
+    	System.out.println("Statement : Select the names of the directors who cast the same actor more than once");
+    	String query = "WITH dicActId(directorID, actorID) as\n"
+    			+ "		(SELECT directorID, actorID\n"
+    			+ "		from make join casting using(movieID)),\n"
+    			+ "		   \n"
+    			+ "		dicId(directorID) as\n"
+    			+ "		(SELECT distinct directorID\n"
+    			+ "		from dicActId as A\n"
+    			+ "		where (SELECT count(*)\n"
+    			+ "		   FROM dicActId as B\n"
+    			+ "		   where A.actorID = B.actorID) > 1)\n"
+    			+ "		   \n"
+    			+ "		SELECT directorName from director join dicId using(directorID)";
+    	System.out.println("Translated SQL: "+query);
+    	try {
+    		ResultSet rs = st.executeQuery(query);
+    		String directorName;
+    		System.out.println("director table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|directorName");
+    		while(rs.next()) {
+    			directorName = rs.getString(1);
+    			System.out.println("|"+directorName);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT director error : " + e);
         }
     }
     

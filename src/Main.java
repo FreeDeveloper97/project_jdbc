@@ -63,6 +63,7 @@ public class Main {
         awardMovie(st, "The Dark Knight", "Best picture", "2009");
         //2-8 insert award, directorObtain
         awardDirector(st, "Christopher Nolan", "Best director", "2018");
+        
         //3-1 insert customer, update movie
         customerRate(st, "Ethan", 5, "Dunkirk");
         //3-2 insert customer, update movie
@@ -71,6 +72,8 @@ public class Main {
         customerRateFromCasting(st, "Jill", 4, "Main actor", "Female");
         //3-4 insert customer, update movie
         customerRateFromMovieGenre(st, "Hayden", 4, "Fantasy");
+        //3-5 insert customer, update movie
+        customerRateFromDirectorObtain(st, "John", 5, "Best director");
         
         
         /////////////////////////////////////////////////////
@@ -469,6 +472,17 @@ public class Main {
     	}
     }
     
+    static void customerRateFromDirectorObtain(Statement st, String customerName, int rate, String awardName) {
+    	System.out.println("Statement : " + customerName + " rates " + rate + " to the movies whose won the \"" + awardName + "\" award");
+    	//1. directorObtain : directorID join make 에서 movieID 값들 구하기
+    	ArrayList<Integer> movieIds = getMovieIdsFromDirectorObtain(st, awardName);
+    	//2. customerRate 추가, movie update 하기
+    	for(int i=0; i<movieIds.size(); i++) {
+    		addCustomerRate(st, customerName, movieIds.get(i), rate);
+    		updateMovieRate(st, movieIds.get(i));
+    	}
+    }
+    
     static int addAward(Statement st, String awardName) {
     	int awardID = 0;
     	try {
@@ -654,6 +668,19 @@ public class Main {
     		while(rs.next()) { movieIds.add(rs.getInt(1)); }
     	} catch (SQLException e) {
         	System.out.println("SELECT movieGenre error : " + e);
+        }
+    	return movieIds;
+    }
+    
+    static ArrayList<Integer> getMovieIdsFromDirectorObtain(Statement st, String awardName) {
+    	ArrayList<Integer> movieIds = new ArrayList<Integer>();
+    	try {
+    		ResultSet rs = st.executeQuery("with directorIds(directorID) as\n"
+    				+ "(select directorID from directorObtain join award using(awardID) where awardName = '" + awardName + "')\n"
+    				+ "select movieID from make join directorIds using(directorID)");
+    		while(rs.next()) { movieIds.add(rs.getInt(1)); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT directorObtain error : " + e);
         }
     	return movieIds;
     }

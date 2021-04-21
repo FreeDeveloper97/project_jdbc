@@ -99,11 +99,11 @@ public class Main {
     	//4. movie
     	tables.add("create table movie\n"
     			+ "	(movieID		int not null,\n"
-    			+ "	movieName		varchar(30) not null,\n"
+    			+ "	movieName		varchar(20) not null,\n"
     			+ "	releaseYear		varchar(4) not null,\n"
     			+ "	releaseMonth	varchar(2) not null,\n"
     			+ "	releaseDate		varchar(2) not null,\n"
-    			+ "	publisherName	varchar(30) not null,\n"
+    			+ "	publisherName	varchar(25) not null,\n"
     			+ "	avgRate			numeric(2,1),\n"
     			+ "	primary key(movieID))");
     	//5. award
@@ -421,7 +421,7 @@ public class Main {
     	//1. consumerRate 입력
     	int movieID = addCustomerRate(st, customerName, movieName, rate);
     	//2. movie update 하기
-    	updateMovieRate(st, movieID, rate);
+    	updateMovieRate(st, movieID);
     }
     
     static int addAward(Statement st, String awardName) {
@@ -530,8 +530,23 @@ public class Main {
     	return movieID;
     }
     
-    static void updateMovieRate(Statement st, int movieID, int rate) {
-    	System.out.println("update movie / movieID = " + movieID + ", rate = " + rate);
+    static void updateMovieRate(Statement st, int movieID) {
+    	try {
+    		//1. movieID 값의 avg(rate)값 구하기
+    		float avgRate = 0;
+    		ResultSet rs = st.executeQuery("SELECT avg(rate) from customerRate where movieID = " + movieID);
+    		while(rs.next()) { avgRate = rs.getFloat(1); }
+    		//2. movieID 값의 avgRate update 하기
+    		String query = "UPDATE movie set avgRate = " + avgRate + " where movieID = " + movieID;
+    		//수행
+    		System.out.println("Translated SQL: " + query);
+    		st.executeUpdate(query);
+    		System.out.println("updated Tables");
+    		//table 출력
+    		printMovieTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("UPDATE movie error : " + e);
+        }
     }
     
     static void printAwardTable(Statement st) {
@@ -634,6 +649,36 @@ public class Main {
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT customerRate error : " + e);
+        }
+    }
+    
+    static void printMovieTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from movie");
+    		int movieID;
+    		String movieName;
+    		String year;
+    		String month;
+    		String date;
+    		String publisherName;
+    		Float avgRate;
+    		System.out.println("movie table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieID |movieName           |releaseYear |releaseMonth |releaseDate |publisherName            |avgRate");
+    		while(rs.next()) {
+    			movieID = rs.getInt(1);
+    			movieName = rs.getString(2);
+    			year = rs.getString(3);
+    			month = rs.getString(4);
+    			date = rs.getString(5);
+    			publisherName = rs.getString(6);
+    			avgRate = rs.getFloat(7);
+    			System.out.printf("|"+"%-8d"+"|"+"%-20s"+"|"+"%-12s"+"|"+"%-13s"+"|"+"%-12s"+"|"+"%-25s"+"|"+"%f\n", 
+    					movieID, movieName, year, month, date, publisherName, avgRate);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movie error : " + e);
         }
     }
 }

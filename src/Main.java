@@ -65,8 +65,11 @@ public class Main {
         awardDirector(st, "Christopher Nolan", "Best director", "2018");
         //3-1 insert customer, update movie
         customerRate(st, "Ethan", 5, "Dunkirk");
-        //3-1 insert customer, update movie
-        customerRateWithDirector(st, "Bell", 5, "Tim Burton");
+        //3-2 insert customer, update movie
+        customerRateFromMake(st, "Bell", 5, "Tim Burton");
+        //3-3 insert 
+        customerRateFromCasting(st, "Jill", 4, "Main actor", "Female");
+        //casting:role = female, Main Actor -> movieID
         
         
         /////////////////////////////////////////////////////
@@ -428,12 +431,25 @@ public class Main {
     	updateMovieRate(st, movieID);
     }
     
-    static void customerRateWithDirector(Statement st, String customerName, int rate, String directorName) {
+    static void customerRateFromMake(Statement st, String customerName, int rate, String directorName) {
     	System.out.println("Statement : " + customerName + " rates " + rate + " to the movies whose director is \"" + directorName + "\"");
     	//1. directorId 값 구하기
     	int directorID = getDirectorID(st, directorName);
     	//2. make 에서 movieId 값들 구하기
-    	ArrayList<Integer> movieIds = getMovieIDFromMake(st, directorID);
+    	ArrayList<Integer> movieIds = getMovieIdsFromMake(st, directorID);
+    	//3. customerRate 추가, movie update 하기
+    	for(int i=0; i<movieIds.size(); i++) {
+    		addCustomerRate(st, customerName, movieIds.get(i), rate);
+    		updateMovieRate(st, movieIds.get(i));
+    	}
+    }
+    
+    static void customerRateFromCasting(Statement st, String customerName, int rate, String role, String gender) {
+    	System.out.println("Statement : " + customerName + " rates " + rate + " to the movies whose " + role + " is " + gender);
+    	//1. actor, casting 에서 gender, role 값에 따라 actorID 값들 구하기
+    	ArrayList<Integer> actorIds = getActorIdsFromActorCasting(st, gender, role);
+    	//2. casting 에서 actorID 값에 따라 movieID 값들 구하기
+    	ArrayList<Integer> movieIds = getMovieIdsFromCasting(st, actorIds);
     	//3. customerRate 추가, movie update 하기
     	for(int i=0; i<movieIds.size(); i++) {
     		addCustomerRate(st, customerName, movieIds.get(i), rate);
@@ -584,13 +600,37 @@ public class Main {
     	return directorID;
     }
     
-    static ArrayList<Integer> getMovieIDFromMake(Statement st, int directorID) {
+    static ArrayList<Integer> getMovieIdsFromMake(Statement st, int directorID) {
     	ArrayList<Integer> movieIds = new ArrayList<Integer>();
     	try {
     		ResultSet rs = st.executeQuery("SELECT movieID from make where directorID = " + directorID);
     		while(rs.next()) { movieIds.add(rs.getInt(1)); }
     	} catch (SQLException e) {
         	System.out.println("SELECT make error : " + e);
+        }
+    	return movieIds;
+    }
+    
+    static ArrayList<Integer> getActorIdsFromActorCasting(Statement st, String gender, String role) {
+    	ArrayList<Integer> actorIds = new ArrayList<Integer>();
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT actorID from actor join casting using(actorID) where gender = '"+gender+"' and role = '"+role+"'");
+    		while(rs.next()) { actorIds.add(rs.getInt(1)); }
+    	} catch (SQLException e) {
+        	System.out.println("SELECT actor error : " + e);
+        }
+    	return actorIds;
+    }
+    
+    static ArrayList<Integer> getMovieIdsFromCasting(Statement st, ArrayList<Integer> actorIds) {
+    	ArrayList<Integer> movieIds = new ArrayList<Integer>();
+    	try {
+    		for(int i=0; i<actorIds.size(); i++) {
+    			ResultSet rs = st.executeQuery("SELECT movieID from casting where actorID = " + actorIds.get(i));
+    			while(rs.next()) { movieIds.add(rs.getInt(1)); }
+    		}
+    	} catch (SQLException e) {
+        	System.out.println("SELECT casting error : " + e);
         }
     	return movieIds;
     }
@@ -710,7 +750,7 @@ public class Main {
     		Float avgRate;
     		System.out.println("movie table");
     		System.out.println("+-----------------------------------");
-    		System.out.println("|movieID |movieName           |releaseYear |releaseMonth |releaseDate |publisherName            |avgRate");
+    		System.out.println("|movieID |movieName           |releaseYear |releaseMonth |releaseDate |publisherName             |avgRate");
     		while(rs.next()) {
     			movieID = rs.getInt(1);
     			movieName = rs.getString(2);
@@ -719,7 +759,7 @@ public class Main {
     			date = rs.getString(5);
     			publisherName = rs.getString(6);
     			avgRate = rs.getFloat(7);
-    			System.out.printf("|"+"%-8d"+"|"+"%-20s"+"|"+"%-12s"+"|"+"%-13s"+"|"+"%-12s"+"|"+"%-25s"+"|"+"%f\n", 
+    			System.out.printf("|"+"%-8d"+"|"+"%-20s"+"|"+"%-12s"+"|"+"%-13s"+"|"+"%-12s"+"|"+"%-26s"+"|"+"%f\n", 
     					movieID, movieName, year, month, date, publisherName, avgRate);
     		}
     		System.out.println();

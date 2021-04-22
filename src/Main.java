@@ -40,7 +40,7 @@ public class Main {
         
         Statement st = connection.createStatement();
 //        //drop table
-        dropTable(st);
+//        dropTable(st);
         
         //1-1 create table
         createTable(st);
@@ -81,6 +81,9 @@ public class Main {
         selectDirectorWithActorCount(st);
         //6 select movie,movieGenre
         selectMovieWithGenre(st);
+        
+        //9 drop all table
+        dropTable(st);
         
         
         /////////////////////////////////////////////////////
@@ -134,58 +137,58 @@ public class Main {
     	
     	//7. movieGenre
     	tables.add("create table movieGenre\n"
-    			+ "	(movieID		int,\n"
-    			+ "	genreName		varchar(20),\n"
+    			+ "	(movieID		int not null,\n"
+    			+ "	genreName		varchar(20) not null,\n"
     			+ "	primary key(movieID, genreName),\n"
-    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
-    			+ "	foreign key(genreName) references genre (genreName) on delete set null)");
+    			+ "	foreign key(movieID) references movie (movieID) on delete cascade,\n"
+    			+ "	foreign key(genreName) references genre (genreName) on delete cascade)");
     	//8. movieObtain
     	tables.add("create table movieObtain\n"
-    			+ "	(movieID		int,\n"
-    			+ "	awardID			int,\n"
-    			+ "	year			varchar(4),\n"
+    			+ "	(movieID		int not null,\n"
+    			+ "	awardID			int not null,\n"
+    			+ "	year			varchar(4) not null,\n"
     			+ "	primary key(movieID, awardID),\n"
-    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
-    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    			+ "	foreign key(movieID) references movie (movieID) on delete cascade,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete cascade)");
     	//9. actorObtain
     	tables.add("create table actorObtain\n"
-    			+ "	(actorID		int,\n"
-    			+ "	awardID			int,\n"
-    			+ "	year			varchar(4),\n"
+    			+ "	(actorID		int not null,\n"
+    			+ "	awardID			int not null,\n"
+    			+ "	year			varchar(4) not null,\n"
     			+ "	primary key(actorID, awardID),\n"
-    			+ "	foreign key(actorID) references actor (actorID) on delete set null,\n"
-    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    			+ "	foreign key(actorID) references actor (actorID) on delete cascade,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete cascade)");
     	//10. directorObtain
     	tables.add("create table directorObtain\n"
-    			+ "	(directorID		int,\n"
-    			+ "	awardID			int,\n"
-    			+ "	year			varchar(4),\n"
+    			+ "	(directorID		int not null,\n"
+    			+ "	awardID			int not null,\n"
+    			+ "	year			varchar(4) not null,\n"
     			+ "	primary key(directorID, awardID),\n"
-    			+ "	foreign key(directorID) references director (directorID) on delete set null,\n"
-    			+ "	foreign key(awardID) references award (awardID) on delete set null)");
+    			+ "	foreign key(directorID) references director (directorID) on delete cascade,\n"
+    			+ "	foreign key(awardID) references award (awardID) on delete cascade)");
     	//11. casting
     	tables.add("create table casting\n"
-    			+ "	(movieID		int,\n"
-    			+ "	actorID			int,\n"
-    			+ "	role			varchar(20),\n"
+    			+ "	(movieID		int not null,\n"
+    			+ "	actorID			int not null,\n"
+    			+ "	role			varchar(20) not null,\n"
     			+ "	primary key(movieID, actorID),\n"
-    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
-    			+ "	foreign key(actorID) references actor (actorID) on delete set null)");
+    			+ "	foreign key(movieID) references movie (movieID) on delete cascade,\n"
+    			+ "	foreign key(actorID) references actor (actorID) on delete cascade)");
     	//12. make
     	tables.add("create table make\n"
-    			+ "	(movieID		int,\n"
-    			+ "	directorID		int,\n"
+    			+ "	(movieID		int not null,\n"
+    			+ "	directorID		int not null,\n"
     			+ "	primary key(movieID, directorID),\n"
-    			+ "	foreign key(movieID) references movie (movieID) on delete set null,\n"
-    			+ "	foreign key(directorID) references director (directorID) on delete set null)");
+    			+ "	foreign key(movieID) references movie (movieID) on delete cascade,\n"
+    			+ "	foreign key(directorID) references director (directorID) on delete cascade)");
     	//13. customerRate
     	tables.add("create table customerRate\n"
-    			+ "	(customerID		int,\n"
-    			+ "	movieID			int,\n"
-    			+ "	rate			int,\n"
+    			+ "	(customerID		int not null,\n"
+    			+ "	movieID			int not null,\n"
+    			+ "	rate			int not null,\n"
     			+ "	primary key(customerID, movieID),\n"
-    			+ "	foreign key(customerID) references customer (customerID) on delete set null,\n"
-    			+ "	foreign key(movieID) references movie (movieID) on delete set null)");
+    			+ "	foreign key(customerID) references customer (customerID) on delete cascade,\n"
+    			+ "	foreign key(movieID) references movie (movieID) on delete cascade)");
     	
     	return tables;
     }

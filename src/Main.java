@@ -79,6 +79,8 @@ public class Main {
         selectMovieWithActorDead(st);
         //5 select director
         selectDirectorWithActorCount(st);
+        //6 select movie,movieGenre
+        selectMovieWithGenre(st);
         
         
         /////////////////////////////////////////////////////
@@ -744,6 +746,30 @@ public class Main {
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT director error : " + e);
+        }
+    }
+    
+    static void selectMovieWithGenre(Statement st) {
+    	System.out.println("Statement : Select the names of the movies and the genres, where movies have the common genre");
+    	String query = "SELECT movieName, genreName \n"
+    			+ "		from movie join movieGenre using(movieID) \n"
+    			+ "		order by genreName";
+    	System.out.println("Translated SQL: "+query);
+    	try {
+    		ResultSet rs = st.executeQuery(query);
+    		String movieName;
+    		String genreName;
+    		System.out.println("movie join movieGenre table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieName           |genreName");
+    		while(rs.next()) {
+    			movieName = rs.getString(1);
+    			genreName = rs.getString(2);
+    			System.out.printf("|"+"%-20s"+"|"+"%s\n",movieName, genreName);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movie join movieGenre error : " + e);
         }
     }
     

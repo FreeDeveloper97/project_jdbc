@@ -39,8 +39,6 @@ public class Main {
         ////////// write your code on this ////////////
         
         Statement st = connection.createStatement();
-        //drop table
-//        dropTable(st);
         
         //1-1 create table
         createTable(st);
@@ -87,7 +85,6 @@ public class Main {
         deleteCustomer(st);
         //9 drop all table
         dropTable(st);
-        
         
         /////////////////////////////////////////////////////
 
@@ -783,13 +780,35 @@ public class Main {
     
     static void deleteMovie(Statement st) {
     	System.out.println("Statement : Delete the movies whose director or actor did not get any award and delete data from related tables");
-    	
-    	//actorObtain 에서 없는 actorID 찾기
-    	//directorObtain 에서 없는 directorID 찾기
-    	
-    	printMovieTable(st);
-//    	printCastingTable(st);
-    	
+    	try {
+    		//actorObtain 에서 없는 actorID 찾아 movie 삭제하기
+    		String query = "with direct_id(directorID) as\n"
+    				+ "		(select directorID from director where directorID not in \n"
+    				+ "		(select directorID from directorObtain)),\n"
+    				+ "		movie_id(movieID) as\n"
+    				+ "		(select movieID from make join direct_id using(directorID))\n"
+    				+ "		delete from movie where movieID in (select movieID from movie_id)";
+    		System.out.println("Translated SQL: " + query);
+    		st.executeUpdate(query);
+    		printMovieTable(st);
+    		//directorObtain 에서 없는 directorID 찾아 movie 삭제하기
+    		query = "with actor_id(actorID) as\n"
+    				+ "		(select actorID from actor where actorID not in\n"
+    				+ "		(select actorID from actorObtain)),\n"
+    				+ "		movie_id(movieID) as\n"
+    				+ "		(select movieID from casting join actor_id using(actorID))\n"
+    				+ "		delete from movie where movieID in (select movieID from movie_id)";
+    		System.out.println("Translated SQL: " + query);
+    		st.executeUpdate(query);
+    		printMovieTable(st);
+    		printMovieObtainTable(st);
+    		printMovieGenreTable(st);
+    		printCastingTable(st);
+    		printMakeTable(st);
+    		printCustomerRateTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("DELETE director error : " + e);
+        }
     }
     
     static void deleteCustomer(Statement st) {
@@ -961,6 +980,65 @@ public class Main {
     		System.out.println();
     	} catch (SQLException e) {
         	System.out.println("SELECT customer error : " + e);
+        }
+    }
+    
+    static void printMovieGenreTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from movieGenre");
+    		int movieID;
+    		String genreName;
+    		System.out.println("movieGenre table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieID  |genreName");
+    		while(rs.next()) {
+    			movieID = rs.getInt(1);
+    			genreName = rs.getString(2);
+    			System.out.printf("|"+"%-9d"+"|"+"%s\n", movieID, genreName);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT movieGenre error : " + e);
+        }
+    }
+    
+    static void printCastingTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from casting");
+    		int movieID;
+    		int actorID;
+    		String role;
+    		System.out.println("casting table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieID  |actorID  |role");
+    		while(rs.next()) {
+    			movieID = rs.getInt(1);
+    			actorID = rs.getInt(2);
+    			role = rs.getString(3);
+    			System.out.printf("|"+"%-9d"+"|"+"%-9d"+"|"+"%s\n", movieID, actorID, role);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT casting error : " + e);
+        }
+    }
+    
+    static void printMakeTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from make");
+    		int movieID;
+    		int directorID;
+    		System.out.println("make table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|movieID  |directorID");
+    		while(rs.next()) {
+    			movieID = rs.getInt(1);
+    			directorID = rs.getInt(2);
+    			System.out.printf("|"+"%-9d"+"|"+"%d\n", movieID, directorID);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT make error : " + e);
         }
     }
 }

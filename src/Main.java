@@ -39,7 +39,7 @@ public class Main {
         ////////// write your code on this ////////////
         
         Statement st = connection.createStatement();
-//        //drop table
+        //drop table
 //        dropTable(st);
         
         //1-1 create table
@@ -81,7 +81,10 @@ public class Main {
         selectDirectorWithActorCount(st);
         //6 select movie,movieGenre
         selectMovieWithGenre(st);
-        
+        //7 delete movie
+        deleteMovie(st);
+        //8 delete customer
+        deleteCustomer(st);
         //9 drop all table
         dropTable(st);
         
@@ -111,8 +114,8 @@ public class Main {
     	//3. customer
     	tables.add("create table customer\n"
     			+ "	(customerID		int not null,\n"
-    			+ "	customerName	varchar(20) not null,\n"
-    			+ "	dateOfBirth		varchar(20) not null,\n"
+    			+ "	customerName	varchar(10) not null,\n"
+    			+ "	dateOfBirth		varchar(10) not null,\n"
     			+ "	gender			varchar(10) not null,\n"
     			+ "	primary key(customerID))");
     	//4. movie
@@ -323,15 +326,17 @@ public class Main {
     
     
     static void dropTable(Statement st) {
+    	System.out.println("Statement : Delete all tables and data(make the database empty)");
     	ArrayList<String> dropTables = getDropTables();
         try {
         	for(int i=0; i<dropTables.size(); i++) {
             	st.executeUpdate(dropTables.get(i));
+            	System.out.println("Translated SQL: " + dropTables.get(i));
             }
-            System.out.println("drop table complete");
         } catch (SQLException e) {
         	System.out.println("dtop table error : " + e);
         }
+        System.out.println("----------NOTHING IN DATABASE----------");
     }
     
     static void createTable(Statement st) {
@@ -776,6 +781,33 @@ public class Main {
         }
     }
     
+    static void deleteMovie(Statement st) {
+    	System.out.println("Statement : Delete the movies whose director or actor did not get any award and delete data from related tables");
+    	
+    	//actorObtain 에서 없는 actorID 찾기
+    	//directorObtain 에서 없는 directorID 찾기
+    	
+    	printMovieTable(st);
+//    	printCastingTable(st);
+    	
+    }
+    
+    static void deleteCustomer(Statement st) {
+    	System.out.println("Statement : Delete all customers and delete data from related tables");
+    	String query = "delete from customer";
+    	System.out.println("Translated SQL: "+query);
+    	try {
+    		st.executeUpdate(query);
+    		System.out.println("updated Tables");
+    		//customer 출력
+    		printCustomerTable(st);
+    		//customerRate 출력
+        	printCustomerRateTable(st);
+    	} catch (SQLException e) {
+        	System.out.println("DELETE customer error : " + e);
+        }
+    }
+    
     static void printAwardTable(Statement st) {
     	try {
     		ResultSet rs = st.executeQuery("SELECT * from award");
@@ -908,7 +940,27 @@ public class Main {
         	System.out.println("SELECT movie error : " + e);
         }
     }
+    
+    static void printCustomerTable(Statement st) {
+    	try {
+    		ResultSet rs = st.executeQuery("SELECT * from customer");
+    		int customerID;
+    		String customerName;
+    		String dateOfBirth;
+    		String gender;
+    		System.out.println("customer table");
+    		System.out.println("+-----------------------------------");
+    		System.out.println("|customerID  |customerName  |dateOfBirth  |gender");
+    		while(rs.next()) {
+    			customerID = rs.getInt(1);
+    			customerName = rs.getString(2);
+    			dateOfBirth = rs.getString(3);
+    			gender = rs.getString(4);
+    			System.out.printf("|"+"%-12d"+"|"+"%-14s"+"|"+"%13s"+"|"+"%s\n", customerID, customerName, dateOfBirth, gender);
+    		}
+    		System.out.println();
+    	} catch (SQLException e) {
+        	System.out.println("SELECT customer error : " + e);
+        }
+    }
 }
-
-
-
